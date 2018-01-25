@@ -1,4 +1,6 @@
-﻿namespace GeometryStuff
+﻿using System;
+
+namespace GeometryStuff
 {
     public partial class Rectangle
     {
@@ -23,7 +25,7 @@
                     BottomRight = new Coords(point2.X, point1.Y);
                     break;
                 default:
-                    break;
+                    throw new ArgumentException("Invalid parameter value", "corner");
             }
         }
     }
