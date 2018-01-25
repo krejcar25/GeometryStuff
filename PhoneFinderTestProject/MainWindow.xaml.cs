@@ -50,7 +50,7 @@ namespace PhoneFinder
         
         private readonly Vector ButtonDimensions = new Vector(120, 50);
         private readonly Vector ButtonMargin = new Vector(20, 10);
-        bool displayDeniedRegions = false;
+        private readonly bool displayDeniedRegions = false;
         BackgroundWorker GenerateButtons = new BackgroundWorker();
         private readonly Random Random = new Random();
         public MainWindow()
@@ -74,7 +74,26 @@ namespace PhoneFinder
             int placesCount = 0;
             Timer fadeTimer = new Timer();
             fadeTimer.Interval = 1000;
-            fadeTimer.Elapsed += FadeInTimer_Elapsed;
+            fadeTimer.Elapsed += (object senderElapsed, ElapsedEventArgs eElapsed) =>
+            {
+                Debug.WriteLine("FadeTimer elapsed!");
+                fadeTimer.Interval = 250;
+                if (!GenerateButtons.IsBusy)
+                {
+                    fadeTimer.Stop();
+                    Action invoke = () =>
+                    {
+                        foreach (UIElement element in MainGrid.Children)
+                        {
+                            element.Visibility = Visibility.Visible;
+                        }
+                        DoubleAnimation fade = new DoubleAnimation(1, new Duration(TimeSpan.FromMilliseconds(500)));
+                        Root.BeginAnimation(OpacityProperty, fade);
+                    };
+                    Dispatcher.Invoke(invoke);
+                }
+            };
+
             Dispatcher.Invoke(new Action(() =>
             {
                 rootDimensions = new Vector(ActualWidth, ActualHeight);
@@ -114,7 +133,7 @@ namespace PhoneFinder
                     ButtonCoords newCoords;
                     newCoords = new ButtonCoords(Random, label, rootDimensions.X - (ButtonDimensions.X + 2 * ButtonMargin.X), rootDimensions.Y - (ButtonDimensions.Y + 2 * ButtonMargin.Y), ButtonRegions, ButtonMargin, ButtonDimensions, rootDimensions);
                     ButtonRegions.Add(newCoords);
-
+                    
                     Dispatcher.Invoke(new Action(() =>
                     {
                         Button button = new Button()
@@ -155,21 +174,6 @@ namespace PhoneFinder
                 }
                 PlacesCount = placesCount;
             }
-        }
-
-        private void FadeInTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            ((Timer)sender).Stop();
-            Dispatcher.Invoke(new Action(() =>
-            {
-                while (GenerateButtons.IsBusy) ;
-                foreach (UIElement element in MainGrid.Children)
-                {
-                    element.Visibility = Visibility.Visible;
-                }
-                DoubleAnimation fade = new DoubleAnimation(1, new Duration(TimeSpan.FromMilliseconds(500)));
-                Root.BeginAnimation(OpacityProperty, fade);
-            }));
         }
 
         private void FindButton_Click(object sender, RoutedEventArgs e)
