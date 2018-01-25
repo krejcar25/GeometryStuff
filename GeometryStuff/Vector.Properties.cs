@@ -13,11 +13,11 @@ namespace GeometryStuff
         /// <summary>
         /// A vector with coordinates (0;0)
         /// </summary>
-        public static Vector Null { get => new Vector(0, 0); }
+        public static readonly Vector Null = new Vector(0, 0);
         /// <summary>
         /// A vector with coordinates (1;1)
         /// </summary>
-        public static Vector Unit { get => new Vector(1, 1); }
+        public static readonly Vector Unit = new Vector(1, 1);
         #endregion
     }
 }

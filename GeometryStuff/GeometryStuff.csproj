@@ -41,12 +41,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Angle.Properties.cs" />
+    <Compile Include="Angle.Public.cs" />
     <Compile Include="Rectangle.Private.cs" />
     <Compile Include="Coords.Properties.cs" />
     <Compile Include="Coords.Public.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rectangle.Properties.cs" />
     <Compile Include="Rectangle.Public.cs" />
+    <Compile Include="SpaceTypeNotSameException.cs" />
     <Compile Include="Vector.Properties.cs" />
     <Compile Include="Vector.Public.cs" />
   </ItemGroup>
