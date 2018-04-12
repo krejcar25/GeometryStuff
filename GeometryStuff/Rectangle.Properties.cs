@@ -7,17 +7,17 @@ namespace GeometryStuff
         /// <summary>
         /// Top left corner point
         /// </summary>
-        public Coords TopLeft { get; set; }
+        public CartesianPoint TopLeft { get; set; }
         /// <summary>
         /// Bottom right corner point
         /// </summary>
-        public Coords BottomRight { get; set; }
+        public CartesianPoint BottomRight { get; set; }
         /// <summary>
         /// Top right corner point
         /// </summary>
-        public Coords TopRight
+        public CartesianPoint TopRight
         {
-            get => new Coords(BottomRight.X, TopLeft.Y);
+            get => new CartesianPoint(BottomRight.X, TopLeft.Y);
             private set
             {
                 BottomRight.X = value.X;
@@ -27,9 +27,9 @@ namespace GeometryStuff
         /// <summary>
         /// Bottom left corner point
         /// </summary>
-        public Coords BottomLeft
+        public CartesianPoint BottomLeft
         {
-            get => new Coords(TopLeft.X, BottomRight.Y);
+            get => new CartesianPoint(TopLeft.X, BottomRight.Y);
             private set
             {
                 TopLeft.X = value.X;
@@ -43,7 +43,7 @@ namespace GeometryStuff
         /// <summary>
         /// Size of this rectangle along the Y axis
         /// </summary>
-        public double DimensionY { get => Math.Abs(TopLeft.Y - TopRight.Y); }
+        public double DimensionY { get => Math.Abs(TopLeft.Y- BottomLeft.Y); }
         /// <summary>
         /// The area of this rectangle
         /// </summary>

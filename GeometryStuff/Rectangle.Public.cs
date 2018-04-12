@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using Shapes = System.Windows.Shapes;
 
 namespace GeometryStuff
 {
@@ -17,7 +19,7 @@ namespace GeometryStuff
         /// <param name="point2">Corner point diagonally opposite to point1</param>
         /// <param name="corner">Which corner is point1</param>
         /// <exception cref="ArgumentException">Thrown when a 3D point is supplied</exception>
-        public Rectangle(Coords point1, Coords point2, Corners corner = Corners.TopLeft)
+        public Rectangle(CartesianPoint point1, CartesianPoint point2, Corners corner = Corners.TopLeft)
         {
             point1.CheckSpace(Coords.SpaceType.TwoDim, "The point supplied must be a 2D point", "point1");
             point2.CheckSpace(Coords.SpaceType.TwoDim, "The point supplied must be a 2D point", "point2");
@@ -32,11 +34,11 @@ namespace GeometryStuff
         /// <param name="diagonal">The diagonal vector going from point1</param>
         /// <param name="corner">Which corner is point1</param>
         /// <exception cref="ArgumentException">Thrown when a 3D point or vector is supplied</exception>
-        public Rectangle(Coords point1, Vector diagonal, Corners corner = Corners.TopLeft)
+        public Rectangle(CartesianPoint point1, Vector diagonal, Corners corner = Corners.TopLeft)
         {
             point1.CheckSpace(Coords.SpaceType.TwoDim, "The point supplied must be a 2D point", "point1");
             diagonal.CheckSpace(Coords.SpaceType.TwoDim, "The vector supplied must be a 2D vector", "diagonal");
-            Coords point2 = diagonal.MovePoint(point1);
+            CartesianPoint point2 = point1 + diagonal;
             Debug.WriteLine(string.Format("Creating rectangle from {0} to {1} using vector {2}. First corner is {3}.", point1, point2, diagonal, corner.ToString()));
             Initialise(point1, point2, corner);
         }
@@ -52,8 +54,21 @@ namespace GeometryStuff
             parentDimension.CheckSpace(Coords.SpaceType.TwoDim, "The Parent Dimension Vector must be a 2D vector", "parentDimension");
             Border border = new Border();
             Vector dimension = new Vector(TopLeft, BottomRight);
-            border.Margin = new Thickness(TopLeft.X, TopLeft.Y, parentDimension.X - (TopLeft.X + dimension.X), parentDimension.Y - (TopLeft.Y + dimension.Y));
+            border.Margin = new Thickness(TopLeft.X, TopLeft.Y, parentDimension.X - (TopLeft.X + dimension.X), parentDimension.Y- (TopLeft.Y+ dimension.Y));
             return border;
+        }
+
+        public Shapes.Rectangle ToShape(Brush stroke = null, double strokeThickness = 0, Brush fill = null)
+        {
+            Shapes.Rectangle rect = new Shapes.Rectangle();
+            rect.Width = DimensionX;
+            rect.Height = DimensionY;
+            rect.Stroke = (stroke == null) ? Brushes.Black : stroke;
+            rect.StrokeThickness = strokeThickness;
+            rect.Fill = (fill == null) ? Brushes.Black : fill;
+            rect.SetValue(Canvas.LeftProperty, TopLeft.X);
+            rect.SetValue(Canvas.TopProperty, TopLeft.Y);
+            return rect;
         }
 
         /// <summary>
@@ -68,16 +83,16 @@ namespace GeometryStuff
             switch (corner)
             {
                 case Corners.TopLeft:
-                    TopLeft = resize.MovePoint(TopLeft);
+                    TopLeft = TopLeft + resize;
                     break;
                 case Corners.BottomRight:
-                    BottomRight = resize.MovePoint(BottomRight);
+                    BottomRight = BottomRight + resize;
                     break;
                 case Corners.TopRight:
-                    TopRight = resize.MovePoint(TopRight);
+                    TopRight = TopRight + resize;
                     break;
                 case Corners.BottomLeft:
-                    BottomRight = resize.MovePoint(BottomRight);
+                    BottomRight = BottomRight + resize;
                     break;
                 default:
                     throw new ArgumentException("Invalid parameter value", "corner");
@@ -94,7 +109,7 @@ namespace GeometryStuff
         {
             point.CheckSpace(Coords.SpaceType.TwoDim, "The point supplied must be a 2D point", "point");
             Debug.Write(string.Format("    Checking if {0} is in rectangle {1}...", point, this));
-            bool ret = ((TopLeft.X < point.X && point.X < BottomRight.X) && (TopLeft.Y < point.Y && point.Y < BottomRight.Y));
+            bool ret = ((TopLeft.X < point.X && point.X < BottomRight.X) && (TopLeft.Y< point.Y&& point.Y< BottomRight.Y));
             Debug.WriteLine((ret) ? "It is." : "It isn't.");
             return ret;
         }

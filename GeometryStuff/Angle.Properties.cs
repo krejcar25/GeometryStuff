@@ -1,17 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media.Animation;
 
 namespace GeometryStuff
 {
-    public partial class Angle
+    public partial class Angle : Animatable
     {
+        public static DependencyProperty RadiansProperty = DependencyProperty.Register("RadiansProperty", typeof(double), typeof(Angle), new PropertyMetadata(0d, RadiansChangedCallback));
+
+        private static void RadiansChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            
+        }
+
         /// <summary>
         /// This angle in radians
         /// </summary>
-        public double Rad { get; set; }
+        public double Rad
+        {
+            get => (double)GetValue(RadiansProperty);
+            set => SetValue(RadiansProperty, value);
+        }
         /// <summary>
         /// This angle in Degrees
         /// </summary>
@@ -40,12 +49,21 @@ namespace GeometryStuff
                 Rad = value / 0.0157075;
             }
         }
-        /// <summary>
-        /// The direction of this angle
-        /// </summary>
-        public AngleDirection Direction { get; set; }
 
-        public enum AngleDirection { Anticlockwise=1, Clockwise=-1 };
+        public string DegMinSec
+        {
+            get
+            {
+                int deg = (int)Math.Round(Deg, 0);
+                if (deg > Deg) deg--;
+                double minD = (Deg - deg) * 60;
+                int min = (int)Math.Round(minD, 0);
+                if (min > minD) min--;
+                double secD = (minD - min) * 60;
+                return string.Format("{0}° {1}' {2}\"", deg, min, secD);
+            }
+        }
+
         public enum AngleUnit { Deg, Rad, Grad };
     }
 }

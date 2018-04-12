@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 
 namespace GeometryStuff
 {
@@ -32,34 +33,10 @@ namespace GeometryStuff
         /// <param name="point1">Origin point of vector</param>
         /// <param name="point2">End point of vector</param>
         /// <exception cref="SpaceTypeNotSameException">Thrown when one supplied point is 2D and the other 3D</exception>
-        public Vector(Coords point1, Coords point2) : base(point2.X - point1.X, point2.Y - point1.Y, point2.Z - point1.Z)
+        public Vector(CartesianPoint point1, CartesianPoint point2) : base(point2.X - point1.X, point2.Y- point1.Y, point2.Z - point1.Z)
         {
             point1.CheckSpace(point2, string.Format("Vector constructor requires both points to be same dimensions. point1 is {0} and point2 is {1}", point1.Space.ToString(), point2.Space.ToString()));
             To2D(point1.Space);
-        }
-
-        /// <summary>
-        /// Moves the specified point by this vector
-        /// </summary>
-        /// <param name="point">The point to be moved</param>
-        /// <returns>The point after moving</returns>
-        public Coords MovePoint(Coords point)
-        {
-            CheckSpace(point, string.Format("Vector.MovePoint requires point to be same dimensions as this Vector. This vector is {0} and supplied point is {1}", Space.ToString(), point.Space.ToString()));
-            Coords ret = new Coords(point.X + X, point.Y + Y, point.Z + Z);
-            ret.To2D(Space);
-            return ret;
-        }
-
-        /// <summary>
-        /// Generates vector that has same angle and size but goes opposite way
-        /// </summary>
-        /// <returns>Inverted vector</returns>
-        public Vector GetOppositeVector()
-        {
-            Vector ret = new Vector(-X, -Y, -Z);
-            ret.To2D(Space);
-            return ret;
         }
 
         /// <summary>
@@ -71,21 +48,12 @@ namespace GeometryStuff
         {
             if (Space == SpaceType.ThreeDim) throw new ArgumentException("Perpendicular vectors can be calculated only for 2D vectors");
             Vector perp = new Vector(Y, -X);
-            return new Tuple<Vector, Vector>(perp, perp.GetOppositeVector());
+            return new Tuple<Vector, Vector>(perp, -perp);
         }
 
-        /// <summary>
-        /// Adds a vector to this Vector
-        /// </summary>
-        /// <param name="add">Vector to add to this one</param>
-        /// <exception cref="SpaceTypeNotSameException">Thrown when the supplied vector is 2D and this one is 3D or vice versa</exception>
-        /// <returns>New Vector</returns>
-        public Vector AddVectors(Vector add)
+        public Vector WithLength(double length)
         {
-            CheckSpace(add, string.Format("Vector.AddVectors requires both vectors to be same dimensions. This vector is {0} and the supplied vector is {1}", Space.ToString(), add.Space.ToString()));
-            Vector ret = new Vector(X + add.X, Y + add.Y, Z + add.Z);
-            ret.To2D(Space);
-            return ret;
+            return this * (length / Length);
         }
 
         /// <summary>
@@ -97,7 +65,7 @@ namespace GeometryStuff
         /// <returns>New Vector</returns>
         public Vector AddVectors(double x, double y)
         {
-            return AddVectors(new Vector(x, y));
+            return this + new Vector(x, y);
         }
 
         /// <summary>
@@ -110,7 +78,7 @@ namespace GeometryStuff
         /// <returns>New Vector</returns>
         public Vector AddVectors(double x, double y, double z)
         {
-            return AddVectors(new Vector(x, y, z));
+            return this + new Vector(x, y, z);
         }
 
         /// <summary>
@@ -122,7 +90,7 @@ namespace GeometryStuff
         public double DotProduct(Vector multiplier)
         {
             CheckSpace(multiplier, string.Format("Vector.DotProduct requires both vectors to be same dimensions. This vector is {0} and the supplied vector is {1}", Space.ToString(), multiplier.Space.ToString()));
-            return X * multiplier.X + Y * multiplier.Y + Z * multiplier.Z;
+            return X * multiplier.X + Y* multiplier.Y+ Z * multiplier.Z;
         }
 
         /// <summary>
@@ -135,6 +103,11 @@ namespace GeometryStuff
         {
             CheckSpace(otherVector, string.Format("Vector.VectorAngle requires both vectors to be same dimensions. This vector is {0} and the supplied vector is {1}", Space.ToString(), otherVector.Space.ToString()));
             return new Angle(Angle.AngleUnit.Rad, Math.Acos(Math.Abs(DotProduct(otherVector)) / (Length * otherVector.Length)));
+        }
+
+        public Arrow Arrow(CartesianPoint origin)
+        {
+            return new Arrow(origin, this);
         }
 
         /// <summary>
@@ -152,6 +125,101 @@ namespace GeometryStuff
                 default:
                     return "Incorrectly initialised Vector";
             }
+        }
+        
+        public static Vector WithAngle(double length, Angle angle)
+        {
+            CartesianPoint point = (CartesianPoint)new PolarPoint(length, angle);
+            return new Vector(point.X, point.Y);
+            /*
+            Vector v;
+            if (angle.Deg % 90 == 0)
+            {
+                if ((angle.Deg / 90) % 4 == 0)
+                {
+                    v = new Vector(1, 0);
+                }
+                else if ((angle.Deg / 90) % 2 == 0)
+                {
+                    v = new Vector(-1, 0);
+                }
+                else
+                {
+                    if ((Math.Abs(angle.Deg) - 270) % 360 == 0)
+                    {
+                        if (angle.Deg > 0)
+                        {
+                            v = new Vector(0, -1);
+                        }
+                        else
+                        {
+                            v = new Vector(0, 1);
+                        }
+                    }
+                    else
+                    {
+                        if (angle.Deg > 0)
+                        {
+                            v = new Vector(0, 1);
+                        }
+                        else
+                        {
+                            v = new Vector(0, -1);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                int x = 1;
+                int y = 1;
+                if (angle.Cos< 0)
+                {
+                    x = -1;
+                    y = -1;
+                }
+                v = new Vector(x, y * angle.Tan);
+                
+            }
+            return v.WithLength(length);*/
+        }
+
+        public void Normalise()
+        {
+            X /= Length;
+            Y /= Length;
+            Z /= Length;
+        }
+
+        public static Vector WithAngle(double length, Angle angle1, Vector zeroAngle1, Angle angle2, Vector zeroAngle2)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Freezable CreateInstanceCore() => new Vector(0, 0);
+
+        public static Vector operator +(Vector vector1, Vector vector2)
+        {
+            vector1.CheckSpace(vector2, string.Format("Vector.AddVectors requires both vectors to be same dimensions. This vector is {0} and the supplied vector is {1}", vector1.Space.ToString(), vector2.Space.ToString()));
+            Vector ret = new Vector(vector1.X + vector2.X, vector1.Y+ vector2.Y, vector1.Z + vector2.Z);
+            ret.To2D(vector1.Space);
+            return ret;
+        }
+
+        public static Vector operator -(Vector vector1, Vector vector2) => vector1 + (-vector2);
+
+        public static Vector operator -(Vector vector)
+        {
+            Vector ret = new Vector(-vector.X, -vector.Y, -vector.Z);
+            ret.To2D(vector.Space);
+            return ret;
+        }
+
+        public static Vector operator *(Vector vector, double coefficient)
+        {
+            Vector ret = new Vector(vector.X * coefficient, vector.Y* coefficient, vector.Z * coefficient);
+            ret.To2D(vector.Space);
+            return ret;
         }
     }
 }
